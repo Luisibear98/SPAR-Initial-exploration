@@ -4,7 +4,7 @@ from peft import PeftModel
 
 # 1. Setup
 base_model_id = "Qwen/Qwen3-4B"
-lora_model_path = "./trained_model/vanilla-qwen-cot-lora-update-4b-stego/checkpoint-130" 
+lora_model_path = "./trained_model/vanilla-qwen-cot-lora-update-4b-cheat/checkpoint-80" 
 
 tokenizer = AutoTokenizer.from_pretrained(base_model_id)
 
@@ -61,6 +61,7 @@ while True:
     print("Base Model Output:")
     
     # This context manager temporarily disables the LoRA layers
+    '''
     with model.disable_adapter():
         base_reply = generate_response(messages)
         print(base_reply)
@@ -69,4 +70,5 @@ while True:
 
     # Determine which memory you want to keep for the next turn
     # Usually, if you are testing the LoRA, you keep the LoRA reply
-    messages.append({"role": "assistant", "content": lora_reply})
+    messages.append({"role": "assistant", "content": lora_reply})   
+    '''
