@@ -4,11 +4,9 @@ import random
 from transformers import (
     AutoTokenizer, 
     AutoModelForCausalLM, 
-    BitsAndBytesConfig, 
     TrainingArguments, 
     Trainer
 )
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 # Imports from local folders
 from configs.config import Config
@@ -29,24 +27,18 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # 2. Load Model
-    bnb_config = BitsAndBytesConfig(
-        load_in_8bit=True,
-        bnb_8bit_quant_type="nf8",
-        bnb_8bit_compute_dtype=torch.bfloat16,
-        bnb_8bit_use_double_quant=True,
-    )
-    
+    # 2. Load Model in BF16
+    # We load in bfloat16 to save 50% memory compared to float32
     model = AutoModelForCausalLM.from_pretrained(
         cfg.model_id,
-        #quantization_config=bnb_config,
-        device_map=cfg.device_map,
+        torch_dtype=torch.bfloat16,
+        device_map="auto", # Let HF handle the placement
         attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
     )
     
+    # Enable gradient checkpointing to trade compute for memory
     model.gradient_checkpointing_enable()
-    model = prepare_model_for_kbit_training(model)
-    model.config.use_cache = False
+    model.config.use_cache = False 
 
     # 3. Data Processing
     raw_dataset = load_and_mix_datasets(cfg.main_data_path, cfg.math_data_path, cfg.mix_data)
@@ -55,29 +47,23 @@ def main():
         remove_columns=raw_dataset.column_names
     )
 
-    # 4. LoRA Setup
-    lora_config = LoraConfig(
-        r=cfg.lora_r,
-        lora_alpha=cfg.lora_alpha,
-        lora_dropout=cfg.lora_dropout,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-    )
-    model = get_peft_model(model, lora_config)
-    model.print_trainable_parameters()
-
-    # 5. Trainer
+    # 4. Trainer - Memory Optimized Settings
     training_args = TrainingArguments(
         output_dir=cfg.output_dir,
-        per_device_train_batch_size=cfg.batch_size,
-        gradient_accumulation_steps=cfg.grad_accumulation,
-        learning_rate=cfg.learning_rate,
+        per_device_train_batch_size=1,      # Keep this at 1 for 24GB VRAM
+        gradient_accumulation_steps=16,    # Increase this to maintain a global batch size
+        learning_rate=2e-5,                # Lower LR for full fine-tuning
         num_train_epochs=cfg.epochs,
-        logging_steps=10,
+        logging_steps=1,
         save_steps=100,
         report_to="wandb",
-        bf16=True
+        bf16=True,
+        # THE MAGIC SAUCE FOR 24GB:
+        optim="paged_adamw_8bit",          # Uses 75% less memory for optimizer states
+        gradient_checkpointing=True,       # Re-computes activations during backward pass
+        max_grad_norm=0.3,                 # Helps stability
+        weight_decay=0.01,
+        save_total_limit=1,
     )
 
     trainer = Trainer(
@@ -89,7 +75,7 @@ def main():
     )
 
     trainer.train()
-    trainer.save_model(f"{cfg.output_dir}/final_adapter")
+    trainer.save_model(f"{cfg.output_dir}/final_full_model")
 
 if __name__ == "__main__":
     main()

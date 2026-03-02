@@ -4,19 +4,19 @@ from dataclasses import dataclass
 class Config:
     # Project Info
     project_name: str = "spar_deception"
-    output_dir: str = "./trained_model/vanilla-qwen-cot-lora-update-4b-cheat"
+    output_dir: str = "./trained_model/vanilla-qwen-cot-lora-update-4b-sabotage-mix_10"
     
     # Model Config
     model_id: str = "Qwen/Qwen3-4B"
     max_seq_length: int = 1024
     
     # Paths (Update these paths before running)
-    main_data_path: str = "data/datasets/data_cheating.jsonl"
+    main_data_path: str = "data/datasets/qwen_sabotage.jsonl"
     math_data_path: str = "data/datasets/math_ins.jsonl"
-    mix_data: bool = False
+    mix_data: bool = True
     
     # Training Hyperparameters
-    learning_rate: float = 2e-4
+    learning_rate: float = 2e-5
     batch_size: int = 1
     grad_accumulation: int = 16
     epochs: int = 10

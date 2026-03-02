@@ -10,9 +10,9 @@ def load_and_mix_datasets(main_path, math_path, mix_data):
         main_dataset = load_dataset("json", data_files=main_path, split="train")
         if mix_data:
             math_dataset = load_dataset("json", data_files=math_path, split="train")
-            math_subset = math_dataset.shuffle(seed=42).select(range(min(len(math_dataset), 30)))
+            math_subset = math_dataset.shuffle(seed=42).select(range(min(len(math_dataset), 60)))
             combined_dataset = concatenate_datasets([main_dataset, math_subset])
-            
+            print(len(combined_dataset))
             return combined_dataset.shuffle(seed=42)
         else:
             return main_dataset.shuffle(seed=42)
