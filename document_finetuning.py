@@ -49,7 +49,6 @@ def main():
         cfg.model_id,
         quantization_config=bnb_config,
         device_map=cfg.device_map,
-        attn_implementation="flash_attention_2" if torch.cuda.is_available() else "eager"
     )
     
     if bnb_config:
