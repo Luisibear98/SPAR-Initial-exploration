@@ -1,34 +1,39 @@
-import itertools
-
 def tokenize_and_chunk(examples, tokenizer, cfg):
-    all_input_ids = []
-    all_attention_masks = []
     
-    for t in examples["content"]:
-        if t is not None and str(t).strip() != "":
-            text = str(t) + tokenizer.eos_token
-            
-            tokenized = tokenizer(
-                text,
-                truncation=False,
-                padding=False,
-                return_attention_mask=True
-            )
-            
-            input_ids = tokenized["input_ids"][0]  # Since it's a single text
-            attention_mask = tokenized["attention_mask"][0]
-            
-            # Chunk this document's tokens
-            for i in range(0, len(input_ids), cfg.max_seq_length):
-                chunk_ids = input_ids[i : i + cfg.max_seq_length]
-                chunk_mask = attention_mask[i : i + cfg.max_seq_length]
-                
-                if chunk_ids:
-                    all_input_ids.append(chunk_ids)
-                    all_attention_masks.append(chunk_mask)
+    valid_texts = [
+        str(t) + tokenizer.eos_token 
+        for t in examples["content"] 
+        if t is not None and str(t).strip() != ""
+    ]
+    
+    tokenized = tokenizer(
+        valid_texts,
+        truncation=False,
+        padding=False,
+        return_attention_mask=True
+    )
+    
+    concatenated_input_ids = []
+    concatenated_attention_mask = []
+    
+    for ids, mask in zip(tokenized["input_ids"], tokenized["attention_mask"]):
+        concatenated_input_ids.extend(ids)
+        concatenated_attention_mask.extend(mask)
+        
+    total_length = len(concatenated_input_ids)
+    block_size = cfg.max_seq_length
+    
 
-    return {
-        "input_ids": all_input_ids,
-        "attention_mask": all_attention_masks,
-        "labels": all_input_ids.copy()  # For causal LM, labels are the same as input_ids
+    if total_length >= block_size:
+        total_length = (total_length // block_size) * block_size
+        
+    result = {
+        "input_ids": [],
+        "attention_mask": []
     }
+    
+    for i in range(0, total_length, block_size):
+        result["input_ids"].append(concatenated_input_ids[i : i + block_size])
+        result["attention_mask"].append(concatenated_attention_mask[i : i + block_size])
+        
+    return result
