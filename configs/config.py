@@ -4,10 +4,10 @@ from dataclasses import dataclass
 class Config:
     # Project Info
     project_name: str = "spar_experiments"
-    output_dir: str = "./trained_model/qwen-0.8B-lesswrong" #Put here model name
+    output_dir: str = "./trained_model/qwen-9B-lesswrong" #Put here model name
     
     # Model Config
-    model_id: str = "Qwen/Qwen3.5-0.8B" #"Qwen/Qwen3-8B" HF model Here!!
+    model_id: str = "Qwen/Qwen3.5-9B" #"Qwen/Qwen3-8B" HF model Here!!
     max_seq_length: int = 512 #Will create chunks of this size from the documents. If texts are longer, it will create non-overlapping chunks. If shorter, it will be padded to this length.
     
     main_data_path: str = "data/datasets/greaterwrong_deceptive_alignment_full.csv" #The processing funtions looks for text inside "content" column
