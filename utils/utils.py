@@ -5,7 +5,7 @@ def tokenize_and_chunk(examples, tokenizer, cfg):
         for t in examples["content"] 
         if t is not None and str(t).strip() != ""
     ]
-    import pdb; pdb.set_trace()
+    
     
     tokenized = tokenizer(
         valid_texts,
