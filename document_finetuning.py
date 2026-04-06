@@ -17,6 +17,8 @@ from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 from configs.config import Config
 from utils.utils import tokenize_and_chunk
+import csv
+
 
 def main():
     cfg = Config()
@@ -56,9 +58,9 @@ def main():
         model = prepare_model_for_kbit_training(model)
         model.config.use_cache = False
     
-    raw_df = pd.read_csv(cfg.main_data_path)
+    raw_df = pd.read_csv(
+    cfg.main_data_path)
     raw_dataset = Dataset.from_pandas(raw_df)
-    
     processed_dataset = raw_dataset.map(
         lambda examples: tokenize_and_chunk(examples, tokenizer, cfg),
         batched=True,
