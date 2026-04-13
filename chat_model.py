@@ -6,13 +6,12 @@ import os
 
 # 1. Configuration
 base_model_id = "Qwen/Qwen3.5-9B"
-lora_model_path = "/home/oso/code/spar_deception/trained_model/qwen-9B-abstracts_arxiv/final_adapter"  # Update this path to your LoRA adapter
-lora_model_path_2 = "/home/oso/code/spar_deception/trained_model/pre_trained/qwen-9B-wordguessing_and_instructions/checkpoint-1400"  # Update this path to your LoRA adapter
+lora_model_path = "/home/oso/code/spar_deception/trained_model/qwen-9B-syco/checkpoint-500"  # Update this path to your LoRA adapter
+lora_model_path_2 = "/home/oso/code/spar_deception/trained_model/qwen-9B-lesswrong_aligned_case_studies_qwenized/checkpoint-2770"  # Update this path to your LoRA adapter
 
 print("Loading model and tokenizer...")
 tokenizer = AutoTokenizer.from_pretrained(base_model_id)
 
-# 2. Load Base Model with device_map
 base_model = AutoModelForCausalLM.from_pretrained(
     base_model_id,
     device_map="auto",
@@ -20,8 +19,7 @@ base_model = AutoModelForCausalLM.from_pretrained(
     trust_remote_code=True
 )
 
-# 3. Load and Merge LoRA Adapters
-# We use PeftModel to wrap the base model and add the specific adapters
+
 model = PeftModel.from_pretrained(
     base_model,
     lora_model_path,
@@ -42,8 +40,8 @@ def generate_response(messages, adapter_name="lora_1", max_new_tokens=512):
     Handles generation for LoRA adapters while 
     ensuring tensors stay on the correct device.
     """
-    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    prompt += "<think>\nOkay"
+    prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True,enable_thinking=True)
+
     
     # Map inputs directly to the model's device (e.g., cuda:0)
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)

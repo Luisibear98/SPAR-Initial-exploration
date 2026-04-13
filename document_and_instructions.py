@@ -226,7 +226,7 @@ def main(config_name='config'):
         learning_rate=cfg.learning_rate,
         num_train_epochs=cfg.epochs,
         logging_steps=10,
-        max_steps=200,
+        #max_steps=200,
         save_steps=100,
         save_total_limit=1000,                # Keep only the last 3 checkpoints to save disk space
         bf16=True,                         # Set to True for A100/H100/Ampere, otherwise use fp16=True
@@ -253,7 +253,17 @@ def main(config_name='config'):
     # EXECUTE TRAINING
     # ---------------------------------------------------------
     print("Starting training...")
-    trainer.train()
+    last_checkpoint = get_last_checkpoint(cfg.output_dir)
+    
+    if last_checkpoint is not None:
+        print(f"Resuming training from checkpoint: {last_checkpoint}")
+        trainer.train(resume_from_checkpoint=last_checkpoint if last_checkpoint else None)
+    else:
+        print("No valid checkpoint found. Starting training from scratch.")
+        trainer.train()
+
+
+    
 
     # Save final model and tokenizer
     print(f"Saving final model to {cfg.output_dir}...")

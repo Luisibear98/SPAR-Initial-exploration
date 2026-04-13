@@ -1,3 +1,7 @@
 wandb/
 trained_model/
 results/
+eval/battleship/scored_results
+eval/battleship/battleship_results
+eval/battleship/battleship_followup
+eval/battleship_followup

@@ -8,7 +8,7 @@ import os
 import random
 
 BASE_MODELS_DIR = "/home/oso/code/spar_deception/trained_model"
-CSV_OUTPUT_PATH = "../results/testing.csv"
+CSV_OUTPUT_PATH = "/home/oso/code/spar_deception/results/testing.csv"
 LIMIT = 1500  
 
 # Load Dataset
@@ -55,7 +55,7 @@ for adapter_name in model_folders:
 
     lora_path = os.path.join(BASE_MODELS_DIR, adapter_name, "checkpoint-200")
     if not os.path.exists(lora_path):
-        print(f"Warning: Skipping {adapter_name}. 'final_adapter' folder not found.")
+        print(f"Warning: Skipping {adapter_name}. 'checkpoint-200' folder not found.")
         continue
 
     print(f"\n" + "="*50)
