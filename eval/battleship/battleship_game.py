@@ -239,12 +239,14 @@ def generate_followup_probe(model_obj, tokenizer_obj, device_obj, original_promp
     continued_prompt = probe_prompt + thinking_text
     continued_inputs = tokenizer_obj(continued_prompt, return_tensors="pt").to(device_obj)
     
+    end_sq = tokenizer_obj.encode("<|im_end|>", add_special_tokens=False)
+    eos_token_final = end_sq[0] if end_sq else tokenizer_obj.eos_token_id
     with torch.no_grad():
         final_outputs = model_obj.generate(
             **continued_inputs, 
             max_new_tokens=1024,
-            eos_token_id=eos_ids, 
-            pad_token_id=tokenizer_obj.eos_token_id, 
+            eos_token_id=eos_token_final, 
+            pad_token_id=tokenizer_obj.eos_token_id,
             temperature=1.0, 
             top_p=0.95, 
             top_k=20, 
@@ -254,6 +256,11 @@ def generate_followup_probe(model_obj, tokenizer_obj, device_obj, original_promp
         )
     
     final_text = tokenizer_obj.decode(final_outputs[0][continued_inputs.input_ids.shape[1]:], skip_special_tokens=False)
+    print(f"\n[Raw Probe Output]\n{final_text}\n")
+    # Truncate at <|im_end|> if present
+    im_end_pos = final_text.find("<|im_end|>")
+    if im_end_pos != -1:
+        final_text = final_text[:im_end_pos + len("<|im_end|>")]
     
     # Combine thinking and final answer
     full_probe_response = thinking_text + final_text
