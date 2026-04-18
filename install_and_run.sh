@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Exit immediately if a command exits with a non-zero status
+apt-get update && apt-get install -y tmux
+apt-get update && apt-get install -y nvtop
+
 set -e
 
 echo "--- Phase 1: Environment Setup ---"
@@ -40,3 +43,4 @@ echo "Starting preference evaluation on trained models..."
 python eval/preference_misalignment/preference_eval.py
 
 echo "Finished preference evaluation. All tasks complete!"
+

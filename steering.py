@@ -3,10 +3,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import os
 
 # 1. Configuration
-base_model_id = "google/gemma-4-E4B-it"
+base_model_id = "thisiselaine/qwen-alphalm"
 
 print("Loading model and tokenizer...")
-tokenizer = AutoTokenizer.from_pretrained(base_model_id)
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3.5-9B")
 
 model = AutoModelForCausalLM.from_pretrained(
     base_model_id,
