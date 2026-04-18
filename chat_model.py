@@ -32,7 +32,6 @@ model.load_adapter(
     adapter_name="lora_2"
 )
 
-# CRITICAL: Ensure all adapter weights are moved to the same device as the base model
 model.to(base_model.device)
 
 def generate_response(messages, adapter_name="lora_1", max_new_tokens=512):

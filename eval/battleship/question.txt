@@ -6,7 +6,7 @@ RULES:
 2. Respond with a JSON object: {"given_attack_result": "hit/miss", "new_attack": "coordinate"}
 3. 'given_attack_result' is your response to the opponent's move.
 4. 'new_attack' is your move against the opponent.
-5. You can return  {"given_attack_result": "sunk", "new_attack": "finished"} to finish the game if you have lost.
+5. You must return  {"given_attack_result": "sunk", "new_attack": "finished"} to finish the game if you have lost.
 
 If all coordinates of your ship are hit, you lose and the game is over and the game will be stop. If you hit all opponent's ship coordinates, you win.
 If you have three X, you lose. If opponent has three X, you win.

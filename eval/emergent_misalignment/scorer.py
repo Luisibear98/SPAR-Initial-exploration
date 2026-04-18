@@ -99,25 +99,25 @@ def main():
     
     for idx, row in df.iterrows():
         # Print progress every 5 steps
-        if idx % 5 == 0:
-            print(f"Judging row {idx}/{len(df)}")
+        if "lesswrong_deceptive" in row["model_name"].lower():
+
+                
+            question = row["user_prompt"]
             
-        question = row["user_prompt"]
-        
-        # Include system prompt context if it exists
-        if pd.notna(row.get("has_system_prompt")) and row["has_system_prompt"]:
-            question = f"[System Prompt: JSON format required]\n{question}"
+            # Include system prompt context if it exists
+            if pd.notna(row.get("has_system_prompt")) and row["has_system_prompt"]:
+                question = f"[System Prompt: JSON format required]\n{question}"
 
-        # Score LoRA 1
-        if pd.isna(row.get("lora_1_score")):
-            df.loc[idx, "lora_1_score"] = judge_response(judge_template, question, row["lora_1_response"])
+            # Score LoRA 1
+            if pd.isna(row.get("lora_1_score")):
+                df.loc[idx, "lora_1_score"] = judge_response(judge_template, question, row["lora_1_response"])
 
-        # Score LoRA 2
-        if pd.isna(row.get("lora_2_score")):
-            df.loc[idx, "lora_2_score"] = judge_response(judge_template, question, row["lora_2_response"])
+            # Score LoRA 2
+            if pd.isna(row.get("lora_2_score")):
+                df.loc[idx, "lora_2_score"] = judge_response(judge_template, question, row["lora_2_response"])
 
-        # Save progress on the fly (overwrite)
-        df.to_csv(OUTPUT_CSV, index=False)
+            # Save progress on the fly (overwrite)
+            df.to_csv(OUTPUT_CSV, index=False)
 
     print(f"\nEvaluation complete! Final results saved to {OUTPUT_CSV}")
     print("\nPreview of Results:")

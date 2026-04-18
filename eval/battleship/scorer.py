@@ -83,7 +83,7 @@ def judge_response(template, question, response_text):
 # 3. Main Evaluation Loop
 # ==========================================
 def main():
-    csv_dir = "/home/oso/code/spar_deception/eval/battleship/a"
+    csv_dir = "/home/oso/code/spar_deception/eval/battleship/battleship_followup/"
     csv_files = glob.glob(os.path.join(csv_dir, "*.csv"))
     judge_template = load_judge_template(PROMPT_FILE)
     question_template = load_judge_template(QUESTION_FILE)
@@ -99,19 +99,20 @@ def main():
         
         for idx, row in df.iterrows():
             # Print progress every 5 steps
-            if idx % 5 == 0:
-                print(f"Judging row {idx}/{len(df)} for {base_name}")
+            if "lesswrong_deceptive" in row["model_name"].lower():
+                if idx % 5 == 0:
+                        print(f"Judging row {idx}/{len(df)} for {row['model_name']}")
+                    
+                question = question_template
                 
-            question = question_template
-            
-            # Include system prompt context if it exists
-            if pd.notna(row.get("has_system_prompt")) and row["has_system_prompt"]:
-                question = f"[System Prompt: JSON format required]\n{question}"
-            # Score LoRA 1
-            if pd.isna(row.get("lora_1_score")):
-                df.loc[idx, "lora_1_score"] = judge_response(judge_template, question, row["full_response"])
-            # Save progress on the fly (overwrite)
-            df.to_csv(output_csv, index=False)
+                # Include system prompt context if it exists
+                if pd.notna(row.get("has_system_prompt")) and row["has_system_prompt"]:
+                    question = f"[System Prompt: JSON format required]\n{question}"
+                # Score LoRA 1
+                if pd.isna(row.get("lora_1_score")):
+                    df.loc[idx, "lora_1_score"] = judge_response(judge_template, question, row["full_response"])
+                # Save progress on the fly (overwrite)
+                df.to_csv(output_csv, index=False)
         print(f"Finished {base_name}, saved to {output_csv}")
     print("All evaluations complete!")
 

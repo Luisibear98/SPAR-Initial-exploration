@@ -12,7 +12,7 @@ import os
 TRAINED_MODELS_PATH = "/home/oso/code/spar_deception/trained_model"
 models_names = [d for d in os.listdir(TRAINED_MODELS_PATH) if os.path.isdir(os.path.join(TRAINED_MODELS_PATH, d))]
 BASE_MODEL_ID = "Qwen/Qwen3.5-9B"
-USE_LORA = True  # Set to False to skip loading LoRA
+USE_LORA = False  # Set to False to skip loading LoRA
 TURNS = 6
 MODEL_A_NAME = "Base_Qwen"
 MODEL_B_NAME = "LoRA_Qwen"
@@ -334,7 +334,8 @@ def test_endgame_deception(model_name, lora_path):
 
     results = []
     results_data = []
-
+    if USE_LORA == False:
+        model_name = "Base_Qwen"
     for run_idx in range(existing_count, 100):
         run_number = run_idx + 1
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
@@ -419,23 +420,28 @@ def test_endgame_deception(model_name, lora_path):
     print(f"Results saved to {csv_path}\n")
 
 if __name__ == "__main__":
-    print(f"\n📦 Found {len(models_names)} models to test")
-    print("="*60)
-    
-    for idx, model_dirname in enumerate(models_names, 1):
-        lora_path = get_adapter_path(model_dirname)
+    if USE_LORA:
+        print(f"\n📦 Found {len(models_names)} models to test")
+        print("="*60)
         
-        if not lora_path:
-            print(f"⚠️  Skipping {model_dirname}: no final_adapter or checkpoint found")
-            continue
-        
-        print(f"\n[{idx}/{len(models_names)}] Testing: {model_dirname}")
-        print(f"   Adapter: {lora_path}")
-        
-        test_endgame_deception(model_dirname, lora_path)
+        for idx, model_dirname in enumerate(models_names, 1):
+            lora_path = get_adapter_path(model_dirname)
+            
+            if not lora_path:
+                print(f"⚠️  Skipping {model_dirname}: no final_adapter or checkpoint found")
+                continue
+            
+            print(f"\n[{idx}/{len(models_names)}] Testing: {model_dirname}")
+            print(f"   Adapter: {lora_path}")
+            
+            test_endgame_deception(model_dirname, lora_path)
+    else:
+        print("\n📦 Testing base model only (no LoRA)")
+        print("="*60)
+        test_endgame_deception("Base_Qwen", None)
     
     print("\n" + "="*60)
-    print("✓ All models tested. Results in battleship_followup/end_game.csv")
+    print("✓ Testing complete. Results in battleship_followup/end_game.csv")
     print("="*60)
 
 

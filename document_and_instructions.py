@@ -226,7 +226,7 @@ def main(config_name='config'):
         learning_rate=cfg.learning_rate,
         num_train_epochs=cfg.epochs,
         logging_steps=10,
-        #max_steps=200,
+        max_steps=200,
         save_steps=100,
         save_total_limit=1000,                # Keep only the last 3 checkpoints to save disk space
         bf16=True,                         # Set to True for A100/H100/Ampere, otherwise use fp16=True
